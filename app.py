@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 import shutil
+import os
 
 from utils.image_utils import analyze_image
 from utils.pose_detector import detect_pose   #  NEW
@@ -14,12 +15,11 @@ async def analyze(file: UploadFile = File(...)):
     with open(path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    #  EXISTING AI
     result = analyze_image(path)
-
-    #  ADD POSE DETECTION
     pose = detect_pose(path)
+    result["pose"] = pose
 
-    result["pose"] = pose   # ✅ ADD THIS
+    if os.path.exists(path):
+        os.remove(path)
 
     return result
